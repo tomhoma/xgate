@@ -1,8 +1,10 @@
-FROM lirantal/daloradius:latest
+# Use the tiredofit/daloradius image as the base
+FROM dormancygrace/daloradius:latest
 
 # Copy custom configuration file
 COPY config/daloradius.conf.php /var/www/html/library/
 
-# You can add more customizations here if needed
+# Optionally, add more customizations here if needed
 
-CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
+# Use the default CMD provided by the tiredofit/daloradius image
+# You don't need to run apache manually since the base image already handles it.
