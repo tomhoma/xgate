@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: radius
+      POSTGRES_USER: raduser
+      POSTGRES_PASSWORD: radpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  freeradius:
+    build: ./freeradius
+    depends_on:
+      - postgres
+    environment:
+      RADIUS_DB_HOST: postgres
+      RADIUS_DB_USER: raduser
+      RADIUS_DB_PASS: radpass
+      RADIUS_DB_NAME: radius
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    volumes:
+      - ./freeradius/config:/etc/freeradius/3.0
+
+  daloradius:
+    build: ./daloradius
+    depends_on:
+      - freeradius
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_USER: raduser
+      DB_PASS: radpass
+      DB_NAME: radius
+    ports:
+      - "80:80"
+    volumes:
+      - ./daloradius/config:/var/www/html/library
+
+  captive-portal:
+    build: ./captive-portal
+    depends_on:
+      - freeradius
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

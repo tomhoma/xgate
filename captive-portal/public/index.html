@@ -1,0 +1,86 @@
+<!-- captive-portal/public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotspot Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-half">
+                    <div class="box">
+                        <h2 class="title is-4 has-text-centered">Hotspot Login</h2>
+                        <div class="field">
+                            <label class="label">Username</label>
+                            <div class="control">
+                                <input id="username" class="input" type="text" required>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Password</label>
+                            <div class="control">
+                                <input id="password" class="input" type="password" required>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <button id="loginButton" class="button is-primary is-fullwidth">Login</button>
+                            </div>
+                        </div>
+                        <div id="errorMessage" class="notification is-danger is-hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let loginParams = {};
+
+        async function getLoginParams() {
+            try {
+                const response = await axios.get('/api/login-params' + window.location.search);
+                loginParams = response.data;
+                document.getElementById('username').value = loginParams.username || '';
+                if (loginParams.error) {
+                    showError(loginParams.error);
+                }
+            } catch (error) {
+                console.error('Failed to get login parameters:', error);
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await axios.post('/api/login', {
+                    username,
+                    password,
+                    ...loginParams
+                });
+                if (response.data.success) {
+                    window.location.href = response.data.redirectUrl;
+                }
+            } catch (error) {
+                showError(error.response?.data?.error || 'Login failed');
+            }
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.remove('is-hidden');
+        }
+
+        document.getElementById('loginButton').addEventListener('click', login);
+        window.addEventListener('load', getLoginParams);
+    </script>
+</body>
+</html>

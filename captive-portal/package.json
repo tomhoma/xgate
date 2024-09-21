@@ -1,0 +1,12 @@
+{
+    "name": "captive-portal",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+      "start": "node index.js"
+    },
+    "dependencies": {
+      "express": "^4.17.1",
+      "radius": "^1.1.4"
+    }
+  }
