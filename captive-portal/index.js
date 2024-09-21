@@ -60,6 +60,6 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Captive portal listening at http://localhost:${port}`);
-});
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Captive portal listening at http://0.0.0.0:${port}`);
+  });

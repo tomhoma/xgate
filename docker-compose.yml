@@ -1,7 +1,8 @@
-version: '3'
+version: '3.8'
 
 services:
   postgres:
+    container_name: postgres
     image: postgres:13
     environment:
       POSTGRES_DB: radius
@@ -9,8 +10,12 @@ services:
       POSTGRES_PASSWORD: radpass
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - radius_network
+    restart: unless-stopped
 
   freeradius:
+    container_name: freeradius
     build: ./freeradius
     depends_on:
       - postgres
@@ -23,9 +28,13 @@ services:
       - "1812:1812/udp"
       - "1813:1813/udp"
     volumes:
-      - ./freeradius/config:/etc/freeradius/3.0
+      - freeradius_config:/etc/freeradius/3.0
+    networks:
+      - radius_network
+    restart: unless-stopped
 
   daloradius:
+    container_name: daloradius
     build: ./daloradius
     depends_on:
       - freeradius
@@ -38,14 +47,27 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./daloradius/config:/var/www/html/library
+      - daloradius_config:/var/www/html/library
+    networks:
+      - radius_network
+    restart: unless-stopped
 
   captive-portal:
+    container_name: captive-portal
     build: ./captive-portal
     depends_on:
       - freeradius
     ports:
       - "3000:3000"
+    networks:
+      - radius_network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  freeradius_config:
+  daloradius_config:
+
+networks:
+  radius_network:
+    driver: bridge
